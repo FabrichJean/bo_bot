@@ -1,3 +1,5 @@
 session_bobot.session
 screenshots/
 requirements.txt
+ecosystem.config.js
+venv/
