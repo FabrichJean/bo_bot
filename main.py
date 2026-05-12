@@ -52,18 +52,7 @@ def load_registration_codes(filename='registration_codes.txt'):
         return codes
     except FileNotFoundError:
         print(f"[⚠️ ] Fichier {filename} non trouvé. Utilisation de codes par défaut.")
-        return [
-            'SEC2024',
-            'ADMIN001',
-            'TECH2024',
-            'DEV2024',
-            'OPS2024',
-            'SECURE123',
-            'BOTADMIN',
-            'PRIVILEGED',
-            'MASTER2024',
-            'SUPERUSER'
-        ]
+        return []
 
 VALID_REGISTRATION_CODES = load_registration_codes()
 
