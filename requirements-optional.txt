@@ -1,0 +1,13 @@
+# Dépendances optionnelles pour les captures d'écran
+# Installer selon votre environnement Python
+
+# Pour Python 3.11/3.12 sur macOS/Linux:
+# pip install -r requirements-optional.txt
+# playwright install
+
+# Pour Python 3.14 (version alpha):
+# pip install selenium>=4.0.0
+# webdriver-manager>=4.0.0
+
+playwright==1.45.0
+webdriver-manager==4.0.1
