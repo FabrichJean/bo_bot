@@ -54,6 +54,25 @@ def load_registration_codes(filename='registration_codes.txt'):
         print(f"[⚠️ ] Fichier {filename} non trouvé. Utilisation de codes par défaut.")
         return []
 
+def remove_registration_code(code, filename='registration_codes.txt'):
+    """Supprime un code d'enregistrement du fichier après utilisation."""
+    try:
+        with open(filename, 'r') as f:
+            lines = f.readlines()
+        
+        # Filtrer pour enlever le code utilisé
+        updated_lines = [line for line in lines if line.strip().upper() != code.upper()]
+        
+        # Réécrire le fichier
+        with open(filename, 'w') as f:
+            f.writelines(updated_lines)
+        
+        print(f"[✅] Code `{code}` supprimé de registration_codes.txt")
+        return True
+    except Exception as e:
+        print(f"[❌] Erreur lors de la suppression du code : {e}")
+        return False
+
 VALID_REGISTRATION_CODES = load_registration_codes()
 
 # Initialiser le générateur de token global
@@ -88,6 +107,14 @@ async def cmd_register(args=None, context=None):
     
     # Enregistrer l'utilisateur
     user_registry.register_user(sender)
+    
+    # Supprimer le code du fichier après utilisation
+    remove_registration_code(code)
+    
+    # Recharger les codes depuis le fichier
+    global VALID_REGISTRATION_CODES
+    VALID_REGISTRATION_CODES = load_registration_codes()
+    
     return f"✅ Vous êtes maintenant enregistré : @{sender}\n🔓 Vous pouvez maintenant utiliser les commandes protégées !"
 
 async def cmd_unregister(args=None, context=None):
