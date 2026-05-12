@@ -87,6 +87,8 @@ cmd_handler = CommandHandler(prefix='/', user_registry=user_registry)
 # --- Enregistrer les commandes ---
 async def cmd_register(args=None, context=None):
     """Enregistre l'utilisateur avec un code valide. Usage: /register CODE"""
+    global VALID_REGISTRATION_CODES
+    
     sender = context.get('sender') if context else None
     if not sender:
         return "❌ Impossible de déterminer l'expéditeur"
@@ -112,7 +114,6 @@ async def cmd_register(args=None, context=None):
     remove_registration_code(code)
     
     # Recharger les codes depuis le fichier
-    global VALID_REGISTRATION_CODES
     VALID_REGISTRATION_CODES = load_registration_codes()
     
     return f"✅ Vous êtes maintenant enregistré : @{sender}\n🔓 Vous pouvez maintenant utiliser les commandes protégées !"
@@ -218,6 +219,33 @@ async def cmd_get_group_id(args=None, context=None):
         return f"📍 **ID du groupe** : `{group_id}`\n📝 **Nom** : {group_name}"
     except Exception as e:
         return f"❌ Erreur lors de la récupération de l'ID du groupe : {e}"
+
+async def cmd_send_codes(args=None, context=None):
+    """Envoie un code d'enregistrement disponible aux messages enregistrés."""
+    try:
+        # Recharger les codes depuis le fichier
+        codes = load_registration_codes()
+        
+        if not codes:
+            return "❌ Aucun code disponible."
+        
+        # Prendre le premier code disponible
+        code = codes[0]
+        
+        # Formater le message
+        codes_text = f"🔐 **CODE D'ENREGISTREMENT**\n\n"
+        codes_text += f"Code: `{code}`\n\n"
+        codes_text += f"💡 Utilise: `/register {code}` pour t'enregistrer"
+        
+        # Envoyer aux messages enregistrés (Saved Messages)
+        try:
+            await client.send_message('me', codes_text)
+            return f"✅ Code envoyé"
+        except Exception as e:
+            return f"❌ Erreur lors de l'envoi aux messages enregistrés : {e}"
+    
+    except Exception as e:
+        return f"❌ Erreur : {e}"
 
 async def cmd_list_platforms(args=None, context=None):
     """Liste toutes les plateformes de paiement via l'API."""
@@ -414,6 +442,7 @@ cmd_handler.register(['translate', 't', 'tr'], cmd_translate, require_auth=True)
 cmd_handler.register(['screenshot', 'ss', 'snap'], cmd_screenshot, require_auth=True)  # Auth requise
 cmd_handler.register(['status', 'st', 'info'], cmd_status, require_auth=False)
 cmd_handler.register(['get-group-id', 'group-id', 'gid'], cmd_get_group_id, require_auth=False)
+cmd_handler.register(['code', 'codes', 'send-codes'], cmd_send_codes, require_auth=False)
 cmd_handler.register(['list-platforms', 'lp', 'platforms'], cmd_list_platforms, require_auth=True)  # Auth requise
 cmd_handler.register(['list-channel', 'lc', 'channels'], cmd_list_channel, require_auth=True)  # Auth requise
 cmd_handler.register(['active', 'on', 'activate'], cmd_active, require_auth=True)  # Auth requise
