@@ -42,6 +42,31 @@ ADMIN_PAYLOAD = {
 }
 BASE_URL = 'https://xo-back.99sq20.fun'
 
+# --- Charger les codes d'enregistrement valides depuis le fichier ---
+def load_registration_codes(filename='registration_codes.txt'):
+    """Charge les codes d'enregistrement valides depuis un fichier texte."""
+    try:
+        with open(filename, 'r') as f:
+            codes = [line.strip().upper() for line in f.readlines() if line.strip()]
+        print(f"[✅] {len(codes)} codes d'enregistrement chargés depuis {filename}")
+        return codes
+    except FileNotFoundError:
+        print(f"[⚠️ ] Fichier {filename} non trouvé. Utilisation de codes par défaut.")
+        return [
+            'SEC2024',
+            'ADMIN001',
+            'TECH2024',
+            'DEV2024',
+            'OPS2024',
+            'SECURE123',
+            'BOTADMIN',
+            'PRIVILEGED',
+            'MASTER2024',
+            'SUPERUSER'
+        ]
+
+VALID_REGISTRATION_CODES = load_registration_codes()
+
 # Initialiser le générateur de token global
 token_gen = TokenGenerator(JWT_SECRET, default_payload=ADMIN_PAYLOAD)
 
@@ -53,10 +78,20 @@ cmd_handler = CommandHandler(prefix='/', user_registry=user_registry)
 
 # --- Enregistrer les commandes ---
 async def cmd_register(args=None, context=None):
-    """Enregistre l'utilisateur pour accéder aux commandes protégées."""
+    """Enregistre l'utilisateur avec un code valide. Usage: /register CODE"""
     sender = context.get('sender') if context else None
     if not sender:
         return "❌ Impossible de déterminer l'expéditeur"
+    
+    # Vérifier si un code a été fourni
+    if not args or len(args) == 0:
+        return "❌ /register nécessite un code. Usage: /register CODE\n💡 Demandez un code valide à l'administrateur."
+    
+    code = args[0].upper()  # Convertir en majuscules pour la comparaison
+    
+    # Vérifier si le code est valide
+    if code not in VALID_REGISTRATION_CODES:
+        return f"❌ Code invalide: `{code}`\n💡 Le code fourni n'est pas autorisé. Contactez l'administrateur."
     
     # Vérifier si déjà enregistré
     if user_registry.is_authorized(sender):
@@ -64,7 +99,7 @@ async def cmd_register(args=None, context=None):
     
     # Enregistrer l'utilisateur
     user_registry.register_user(sender)
-    return f"✅ Vous êtes maintenant enregistré : @{sender}\nVous pouvez maintenant utiliser les commandes protégées !"
+    return f"✅ Vous êtes maintenant enregistré : @{sender}\n🔓 Vous pouvez maintenant utiliser les commandes protégées !"
 
 async def cmd_unregister(args=None, context=None):
     """Désactive l'accès aux commandes protégées pour cet utilisateur."""
