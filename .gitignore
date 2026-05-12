@@ -1,2 +1,4 @@
 session_bobot.session
 screenshots/
+ecosystem.config.js
+venv/
