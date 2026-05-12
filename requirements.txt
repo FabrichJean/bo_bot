@@ -1,5 +1,7 @@
-telethon==1.36.0
-requests==2.31.0
-pyjwt==2.8.1
-playwright==1.48.0
-python-dotenv==1.0.0
+telethon>=1.43.0
+requests>=2.31.0
+PyJWT>=2.12.0
+python-dotenv>=1.0.0
+# Optionnel pour les captures d'écran (installer selon votre environnement):
+# Pour Linux/Mac avec Python 3.11-3.12: playwright>=1.40.0
+# Pour Windows ou Python 3.14: selenium>=4.0.0
