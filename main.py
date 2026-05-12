@@ -81,6 +81,42 @@ def get_screenshot_path(user, status_type, timestamp=None):
     return full_path
 
 
+async def get_current_user():
+    """
+    Récupère les informations de l'utilisateur connecté (me) via la session Telethon.
+    
+    Note: Pour Telethon, on utilise une approche défensive avec getattr.
+    Cette fonction essaie plusieurs méthodes pour obtenir l'identité du bot.
+    
+    Returns:
+        str: Identifiant du bot connecté ou None si non disponible
+    """
+    try:
+        # Telethon: client.get_me() retourne un InputPeerUser qui n'a pas tous les attributs
+        # On utilise getattr avec des valeurs par défaut pour éviter les erreurs de type
+        me = await client.get_me()
+        
+        # Essayer le username d'abord
+        username = getattr(me, 'username', None)
+        if username:
+            return username
+        
+        # Puis first_name
+        first_name = getattr(me, 'first_name', None)
+        if first_name:
+            return first_name
+        
+        # Finalement l'ID
+        user_id = getattr(me, 'id', None)
+        if user_id:
+            return f"User {user_id}"
+        
+        return None
+    except Exception as e:
+        print(f"Erreur lors de la récupération de l'utilisateur connecté : {e}")
+        return None
+
+
 # Charger les codes valides au démarrage
 VALID_REGISTRATION_CODES = load_registration_codes()
 
@@ -145,19 +181,26 @@ async def cmd_help(args=None, context=None):
 🤖 **COMMANDES DISPONIBLES**
 
 📝 **AUTHENTIFICATION**
-/register (reg, r) - S'enregistrer pour accéder aux commandes protégées
+/register (reg, r) <code> - S'enregistrer pour accéder aux commandes protégées
 /unregister (unreg, u) - Se désenregistrer
+
+🔑 **CODES D'ENREGISTREMENT**
+/code (codes, send-codes) - Envoyer un code aux messages enregistrés
+/code @username - Envoyer directement un code à l'utilisateur spécifié
+   Exemple: /code @john_doe
 
 🔧 **UTILITAIRES**
 /help (h, ?) - Afficher cette aide
 /ping (p) - Vérifier que le bot est actif
 /status (st, info) - Afficher le statut du bot
+/get-group-id (gid) - Récupérer l'ID du groupe actuel
 
 🌐 **TRADUCTION**
 /translate (t, tr) <texte> - Traduire du chinois au français
    Exemple: /translate 你好
 
 📸 **CAPTURES D'ÉCRAN**
+/screenshot (ss, snap) - Capturer une screenshot de la page admin
 /list-platforms (lp, platforms) - Lister toutes les plateformes de paiement
 /list-channel (lc, channels) <plateforme> - Lister les canaux d'une plateforme
    Exemple: /list-channel Wangpai
@@ -232,7 +275,12 @@ async def cmd_get_group_id(args=None, context=None):
         return f"❌ Erreur lors de la récupération de l'ID du groupe : {e}"
 
 async def cmd_send_codes(args=None, context=None):
-    """Envoie un code d'enregistrement disponible aux messages enregistrés."""
+    """
+    Envoie un code d'enregistrement.
+    Usage: 
+      - /code : Envoyer aux messages enregistrés (Saved Messages) - accessible à tous
+      - /code @username : Envoyer directement à l'utilisateur spécifié - seulement pour le propriétaire du bot
+    """
     try:
         # Récupérer le sender
         sender = context.get('sender') if context else 'Utilisateur inconnu'
@@ -246,18 +294,39 @@ async def cmd_send_codes(args=None, context=None):
         # Prendre le premier code disponible
         code = codes[0]
         
+        # Vérifier si un destinataire a été spécifié
+        target_user = None
+        if args and len(args) > 0:
+            target_user = args[0]
+            # Nettoyer le @ si présent
+            if target_user.startswith('@'):
+                target_user = target_user[1:]
+            
+            # Vérifier si l'expéditeur est autorisé à envoyer directement
+            # L'utilisateur doit être le propriétaire du bot (logged-in user)
+            current_user = await get_current_user()
+            
+            if sender != current_user:
+                return f"❌ Seul le propriétaire du bot peut envoyer un code directement à un utilisateur.\n💡 Utilisez `/code` sans argument pour envoyer aux messages enregistrés."
+        
         # Formater le message
         codes_text = f"🔐 **CODE D'ENREGISTREMENT**\n\n"
         codes_text += f"👤 Demandé par: @{sender}\n\n"
         codes_text += f"Code: `{code}`\n\n"
         codes_text += f"💡 Utilise: `/register {code}` pour t'enregistrer"
         
-        # Envoyer aux messages enregistrés (Saved Messages)
+        # Envoyer à la destination appropriée
         try:
-            await client.send_message('me', codes_text)
-            return f"✅ Code envoyé"
+            if target_user:
+                # Envoyer directement à l'utilisateur spécifié
+                await client.send_message(target_user, codes_text)
+                return f"✅ Code envoyé à @{target_user}"
+            else:
+                # Envoyer aux messages enregistrés (Saved Messages)
+                await client.send_message('me', codes_text)
+                return f"✅ Code envoyé aux messages enregistrés"
         except Exception as e:
-            return f"❌ Erreur lors de l'envoi aux messages enregistrés : {e}"
+            return f"❌ Erreur lors de l'envoi du code : {e}"
     
     except Exception as e:
         return f"❌ Erreur : {e}"

@@ -6,8 +6,9 @@ TELEGRAM_API_HASH = '698a893741a1019d222c87b9a53851c3'
 TELEGRAM_SESSION_NAME = 'session_bobot'
 
 # --- GROUPES ---
-GROUP_MAIN = '91bot运维通知群'
+# GROUP_MAIN = '91bot运维通知群'
 GROUP_ID_TEST = 5156646256
+
 
 # --- CONNEXION ---
 CONNECTION_RETRIES = -1  # Tentatives infinies
