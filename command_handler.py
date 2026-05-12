@@ -78,7 +78,7 @@ class CommandHandler:
             
             sender = context.get('sender') if context else None
             if not sender or not self.user_registry.is_authorized(sender):
-                return f"❌ Vous n'êtes pas autorisé à exécuter cette commande. Utilisez /register pour demander l'accès."
+                return f"❌ Vous n'êtes pas autorisé à exécuter cette commande. Utilisez /code pour demander l'accès."
         
         try:
             callback = self.commands[command_name]

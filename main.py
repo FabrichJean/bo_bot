@@ -5,84 +5,93 @@ from browser_sim import async_screenshot_with_token
 from token_generator import TokenGenerator
 from command_handler import CommandHandler
 from user_registry import UserRegistry
+from config import *
 
-# --- TES INFOS API TELEGRAM ---
-api_id = 37308629  # Ton api_id
-api_hash = '698a893741a1019d222c87b9a53851c3'  # Ton api_hash
-nom_du_groupe = '91bot运维通知群'
-group_id_test = 5156646256  # ID du groupe de test
-
+# Initialiser le client Telegram
 client = TelegramClient(
-    'session_bobot', 
-    api_id, 
-    api_hash,
-    connection_retries=-1,   # Tentatives infinies (utiliser -1 pour infini)
-    retry_delay=5,           # Attendre 5 secondes entre chaque tentative
-    auto_reconnect=True      # Reconnexion automatique
+    TELEGRAM_SESSION_NAME, 
+    TELEGRAM_API_ID, 
+    TELEGRAM_API_HASH,
+    connection_retries=CONNECTION_RETRIES,
+    retry_delay=RETRY_DELAY,
+    auto_reconnect=AUTO_RECONNECT
 )
 
-def google_translate(text, target_lang='fr'):
+# --- FONCTIONS UTILITAIRES ---
+def load_registration_codes():
+    """Charge les codes d'enregistrement depuis le fichier."""
     try:
-        url = f"https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl={target_lang}&dt=t&q={text}"
+        with open(REGISTRATION_CODES_FILE, 'r') as f:
+            codes = [line.strip().upper() for line in f if line.strip()]
+        return codes
+    except FileNotFoundError:
+        return []
+
+def remove_registration_code(code):
+    """Supprime un code d'enregistrement du fichier après utilisation."""
+    try:
+        with open(REGISTRATION_CODES_FILE, 'r') as f:
+            codes = [line.strip() for line in f if line.strip()]
+        
+        # Supprimer le code (insensible à la casse)
+        codes = [c for c in codes if c.upper() != code.upper()]
+        
+        with open(REGISTRATION_CODES_FILE, 'w') as f:
+            for code in codes:
+                f.write(code + '\n')
+    except Exception as e:
+        print(f"Erreur lors de la suppression du code : {e}")
+
+def google_translate(text, target_lang=TRANSLATE_TARGET_LANG):
+    """Traduit un texte via l'API Google Translate."""
+    try:
+        url = f"https://translate.googleapis.com/translate_a/single?client=gtx&sl={TRANSLATE_SOURCE_LANG}&tl={target_lang}&dt=t&q={text}"
         response = requests.get(url)
         # L'API renvoie une liste de listes, la traduction est dans le premier élément
         return response.json()[0][0][0]
     except Exception as e:
         return f"[Erreur traduction: {e}]"
 
+def get_screenshot_path(user, status_type, timestamp=None):
+    """
+    Génère le chemin de screenshot avec la structure: screenshots/{user}/{active|inactive}/{timestamp}.png
+    Args:
+        user: Nom d'utilisateur
+        status_type: 'active' ou 'inactive'
+        timestamp: Timestamp optionnel (par défaut: datetime actuel)
+    Returns:
+        str: Chemin complet du fichier screenshot
+    """
+    import os
+    from datetime import datetime
+    
+    if timestamp is None:
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    
+    # Créer le chemin complet
+    screenshot_dir = os.path.join(SCREENSHOT_ROOT_DIR, user, status_type)
+    
+    # Créer les dossiers s'ils n'existent pas
+    os.makedirs(screenshot_dir, exist_ok=True)
+    
+    # Construire le chemin complet du fichier
+    filename = f"{timestamp}.png"
+    full_path = os.path.join(screenshot_dir, filename)
+    
+    return full_path
 
-# --- Configuration globale pour JWT/API ---
-JWT_SECRET = '49caa9850a1abdf6fghrdf5a9fb093c44aac84dbc46b1f7ab7e4d5c252306919cbdf81'
-ADMIN_PAYLOAD = {
-    "id": "296952048098738236",
-    "username": "admin",
-    "role": "admin",
-    "code": "123456",
-    "parent_id": "123456"
-}
-BASE_URL = 'https://xo-back.99sq20.fun'
 
-# --- Charger les codes d'enregistrement valides depuis le fichier ---
-def load_registration_codes(filename='registration_codes.txt'):
-    """Charge les codes d'enregistrement valides depuis un fichier texte."""
-    try:
-        with open(filename, 'r') as f:
-            codes = [line.strip().upper() for line in f.readlines() if line.strip()]
-        print(f"[✅] {len(codes)} codes d'enregistrement chargés depuis {filename}")
-        return codes
-    except FileNotFoundError:
-        print(f"[⚠️ ] Fichier {filename} non trouvé. Utilisation de codes par défaut.")
-        return []
-
-def remove_registration_code(code, filename='registration_codes.txt'):
-    """Supprime un code d'enregistrement du fichier après utilisation."""
-    try:
-        with open(filename, 'r') as f:
-            lines = f.readlines()
-        
-        # Filtrer pour enlever le code utilisé
-        updated_lines = [line for line in lines if line.strip().upper() != code.upper()]
-        
-        # Réécrire le fichier
-        with open(filename, 'w') as f:
-            f.writelines(updated_lines)
-        
-        print(f"[✅] Code `{code}` supprimé de registration_codes.txt")
-        return True
-    except Exception as e:
-        print(f"[❌] Erreur lors de la suppression du code : {e}")
-        return False
-
+# Charger les codes valides au démarrage
 VALID_REGISTRATION_CODES = load_registration_codes()
 
 # Initialiser le générateur de token global
 token_gen = TokenGenerator(JWT_SECRET, default_payload=ADMIN_PAYLOAD)
 
 # --- Initialiser le registre des utilisateurs ---
-user_registry = UserRegistry(registry_file='authorized_users.json')
+user_registry = UserRegistry(registry_file=AUTHORIZED_USERS_FILE)
 
 # --- Initialiser le gestionnaire de commandes ---
-cmd_handler = CommandHandler(prefix='/', user_registry=user_registry)
+cmd_handler = CommandHandler(prefix=COMMAND_PREFIX, user_registry=user_registry)
 
 # --- Enregistrer les commandes ---
 async def cmd_register(args=None, context=None):
@@ -149,7 +158,6 @@ async def cmd_help(args=None, context=None):
    Exemple: /translate 你好
 
 📸 **CAPTURES D'ÉCRAN**
-/screenshot (ss, snap) - Capturer une screenshot de la page admin
 /list-platforms (lp, platforms) - Lister toutes les plateformes de paiement
 /list-channel (lc, channels) <plateforme> - Lister les canaux d'une plateforme
    Exemple: /list-channel Wangpai
@@ -181,21 +189,24 @@ async def cmd_translate(args=None, context=None):
 async def cmd_screenshot(args=None, context=None):
     """Prend une capture d'écran de la page admin et l'envoie."""
     try:
-        url = 'https://xo-admin.99sq20.fun/admin/exchange/payment-platforms?search=Wangpai&toggleFirst=true'
+        sender = context.get('sender') if context else 'admin'
+        url = SCREENSHOT_ADMIN_URL
         token = token_gen.generate_token()
+        
+        # Générer le chemin de screenshot
+        screenshot_path = get_screenshot_path(sender, 'admin')
         
         image_bytes = await async_screenshot_with_token(
             url, 
             token, 
-            screenshot_path='screenshot_admin.png',
-            element_selector='div.va-card__content'
+            screenshot_path=screenshot_path,
+            element_selector=SCREENSHOT_ELEMENT_SELECTOR
         )
-        
         # Récupérer l'event depuis le contexte pour envoyer le fichier
         event = context.get('event') if context else None
         if event and image_bytes:
             # Envoyer le fichier image
-            await event.reply(file='screenshot_admin.png')
+            await event.reply(file=screenshot_path)
             return None  # L'image a été envoyée directement
         else:
             return f"📸 Capture d'écran sauvegardée. Taille : {len(image_bytes)} octets"
@@ -223,6 +234,9 @@ async def cmd_get_group_id(args=None, context=None):
 async def cmd_send_codes(args=None, context=None):
     """Envoie un code d'enregistrement disponible aux messages enregistrés."""
     try:
+        # Récupérer le sender
+        sender = context.get('sender') if context else 'Utilisateur inconnu'
+        
         # Recharger les codes depuis le fichier
         codes = load_registration_codes()
         
@@ -234,6 +248,7 @@ async def cmd_send_codes(args=None, context=None):
         
         # Formater le message
         codes_text = f"🔐 **CODE D'ENREGISTREMENT**\n\n"
+        codes_text += f"👤 Demandé par: @{sender}\n\n"
         codes_text += f"Code: `{code}`\n\n"
         codes_text += f"💡 Utilise: `/register {code}` pour t'enregistrer"
         
@@ -345,6 +360,7 @@ async def cmd_active(args=None, context=None):
         if not args or not args[0].isdigit():
             return "❌ /active nécessite un ID de canal valide. Usage: /active 156"
         
+        sender = context.get('sender') if context else 'admin'
         channel_id = args[0]
         
         # Étape 1 : Faire l'appel API pour activer le canal
@@ -368,18 +384,20 @@ async def cmd_active(args=None, context=None):
         url = f'https://xo-admin.99sq20.fun/admin/exchange/payment-platforms?search={platform_name}&toggleFirst=true'
         token = token_gen.generate_token()
         
+        # Générer le chemin de screenshot avec structure: screenshots/{user}/active/{timestamp}.png
+        screenshot_path = get_screenshot_path(sender, 'active')
+        
         image_bytes = await async_screenshot_with_token(
             url, 
             token, 
-            screenshot_path='screenshot_active_channel.png',
-            element_selector='div.va-card__content'
+            screenshot_path=screenshot_path,
+            element_selector=SCREENSHOT_ELEMENT_SELECTOR
         )
-        
         # Étape 4 : Envoyer l'image
         event = context.get('event') if context else None
         if event and image_bytes:
             await event.reply(f"✅ Canal {channel_id} activé pour la plateforme **{platform_name}**")
-            await event.reply(file='screenshot_active_channel.png')
+            await event.reply(file=screenshot_path)
             return None  # L'image a été envoyée directement
         else:
             return f"✅ Canal {channel_id} activé pour la plateforme **{platform_name}**\n📸 Screenshot sauvegardée. Taille : {len(image_bytes)} octets"
@@ -392,6 +410,7 @@ async def cmd_inactive(args=None, context=None):
         if not args or not args[0].isdigit():
             return "❌ /inactive nécessite un ID de canal valide. Usage: /inactive 156"
         
+        sender = context.get('sender') if context else 'admin'
         channel_id = args[0]
         
         # Étape 1 : Faire l'appel API pour désactiver le canal
@@ -415,18 +434,21 @@ async def cmd_inactive(args=None, context=None):
         url = f'https://xo-admin.99sq20.fun/admin/exchange/payment-platforms?search={platform_name}&toggleFirst=true'
         token = token_gen.generate_token()
         
+        # Générer le chemin de screenshot avec structure: screenshots/{user}/inactive/{timestamp}.png
+        screenshot_path = get_screenshot_path(sender, 'inactive')
+        
         image_bytes = await async_screenshot_with_token(
             url, 
             token, 
-            screenshot_path='screenshot_inactive_channel.png',
-            element_selector='div.va-card__content'
+            screenshot_path=screenshot_path,
+            element_selector=SCREENSHOT_ELEMENT_SELECTOR
         )
         
         # Étape 4 : Envoyer l'image
         event = context.get('event') if context else None
         if event and image_bytes:
             await event.reply(f"❌ Canal {platform_data.get('name', '')} {channel_id} désactivé pour la plateforme **{platform_name}**")
-            await event.reply(file='screenshot_inactive_channel.png')
+            await event.reply(file=screenshot_path)
             return None  # L'image a été envoyée directement
         else:
             return f"❌ Canal {channel_id} désactivé pour la plateforme **{platform_name}**\n📸 Screenshot sauvegardée. Taille : {len(image_bytes)} octets"
@@ -449,8 +471,8 @@ cmd_handler.register(['active', 'on', 'activate'], cmd_active, require_auth=True
 cmd_handler.register(['inactive', 'off', 'deactivate'], cmd_inactive, require_auth=True)  # Auth requise
 
 
-# --- Exemple d'appel API dans le handler ---
-@client.on(events.NewMessage(chats=group_id_test))
+# --- HANDLER PRINCIPAL ---
+@client.on(events.NewMessage(chats=GROUP_ID_TEST))
 async def handler(event):
     if event.message.text:
         chinois = event.message.text
