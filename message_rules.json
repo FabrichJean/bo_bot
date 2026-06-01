@@ -1,0 +1,92 @@
+{
+  "rules": [
+    {
+      "id": "activate_platform",
+      "pattern": "{action} platform {platform_name}",
+      "keywords": [
+        "activate",
+        "enable",
+        "turn on",
+        "on"
+      ],
+      "action": "activate",
+      "target_type": "platform",
+      "confidence": 0.87,
+      "examples": [
+        "activate platform Wangpai",
+        "enable platform Jincheng"
+      ],
+      "learned_from": "2026-05-14T21:04:08.877179",
+      "validation_count": 1
+    },
+    {
+      "id": "deactivate_platform",
+      "pattern": "{action} platform {platform_name}",
+      "keywords": [
+        "deactivate",
+        "disable",
+        "turn off",
+        "off"
+      ],
+      "action": "deactivate",
+      "target_type": "platform",
+      "confidence": 0.85,
+      "examples": [
+        "deactivate platform Wangpai",
+        "disable platform Jincheng"
+      ],
+      "learned_from": "2026-05-14T21:04:08.877187",
+      "validation_count": 0
+    },
+    {
+      "id": "activate_channel",
+      "pattern": "{action} channel {channel_id}",
+      "keywords": [
+        "activate",
+        "enable",
+        "turn on",
+        "on"
+      ],
+      "action": "activate",
+      "target_type": "channel",
+      "confidence": 0.85,
+      "examples": [
+        "activate channel 156",
+        "enable channel ID:156"
+      ],
+      "learned_from": "2026-05-14T21:04:08.877188",
+      "validation_count": 0
+    },
+    {
+      "id": "deactivate_channel",
+      "pattern": "{action} channel {channel_id}",
+      "keywords": [
+        "deactivate",
+        "disable",
+        "turn off",
+        "off"
+      ],
+      "action": "deactivate",
+      "target_type": "channel",
+      "confidence": 0.85,
+      "examples": [
+        "deactivate channel 156",
+        "disable channel ID:156"
+      ],
+      "learned_from": "2026-05-14T21:04:08.877189",
+      "validation_count": 0
+    }
+  ],
+  "learning_history": [
+    {
+      "timestamp": "2026-05-14T21:04:08.877660",
+      "message": "activate platform Wangpai",
+      "action": "activate",
+      "target_type": "platform",
+      "identifier": "Wangpai",
+      "sender": "admin",
+      "status": "success"
+    }
+  ],
+  "last_updated": "2026-05-14T21:53:53.572915"
+}

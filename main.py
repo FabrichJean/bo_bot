@@ -1,4 +1,6 @@
 from telethon import TelegramClient, events
+import re
+import io
 import requests
 from api_client import APIClient
 from browser_sim import async_screenshot_with_token
@@ -6,6 +8,10 @@ from token_generator import TokenGenerator
 from command_handler import CommandHandler
 from user_registry import UserRegistry
 from config import *
+
+# Telethon exige un int pour les IDs numériques, pas une string
+if isinstance(RAPPORT_TEST_SAVE_DESTINATION, str) and RAPPORT_TEST_SAVE_DESTINATION.lstrip('-').isdigit():
+    RAPPORT_TEST_SAVE_DESTINATION = int(RAPPORT_TEST_SAVE_DESTINATION)
 
 # Initialiser le client Telegram
 client = TelegramClient(
@@ -261,18 +267,44 @@ async def cmd_status(args=None, context=None):
     return "✅ Le bot est actif et écoute les messages."
 
 async def cmd_get_group_id(args=None, context=None):
-    """Récupère et affiche l'ID du groupe actuel."""
-    event = context.get('event') if context else None
-    if not event:
-        return "❌ Impossible de récupérer l'ID du groupe"
-    
+    """Récupère l'ID du groupe courant ou d'un groupe par nom/username. Usage: /gid [@username|nom]"""
+    # Sans argument : groupe courant
+    if not args:
+        event = context.get('event') if context else None
+        if not event:
+            return "❌ Impossible de récupérer l'ID du groupe"
+        try:
+            chat = await event.get_chat()
+            name = getattr(chat, 'title', None) or getattr(chat, 'username', None) or "Groupe sans nom"
+            return f"📍 **ID du groupe** : `{chat.id}`\n📝 **Nom** : {name}"
+        except Exception as e:
+            return f"❌ Erreur : {e}"
+
+    # Avec argument : chercher par username ou nom
+    query = " ".join(args).strip()
+    query_clean = query.lstrip('@')
+
+    # 1. Résolution directe (fonctionne pour les groupes/canaux publics)
     try:
-        chat = await event.get_chat()
-        group_id = chat.id
-        group_name = chat.title or chat.username or "Groupe sans nom"
-        return f"📍 **ID du groupe** : `{group_id}`\n📝 **Nom** : {group_name}"
+        entity = await client.get_entity(query)
+        name = getattr(entity, 'title', None) or getattr(entity, 'username', None) or str(entity.id)
+        return f"📍 **ID** : `{entity.id}`\n📝 **Nom** : {name}"
+    except Exception:
+        pass
+
+    # 2. Recherche dans les dialogues (groupes privés dont on est membre)
+    try:
+        matches = []
+        async for dialog in client.iter_dialogs():
+            e = dialog.entity
+            name = getattr(e, 'title', None) or getattr(e, 'username', None) or ""
+            if query_clean.lower() in name.lower():
+                matches.append(f"📍 `{e.id}` — {name}")
+        if matches:
+            return "\n".join(matches)
+        return f"❌ Aucun groupe trouvé pour : `{query}`"
     except Exception as e:
-        return f"❌ Erreur lors de la récupération de l'ID du groupe : {e}"
+        return f"❌ Erreur lors de la recherche : {e}"
 
 async def cmd_send_codes(args=None, context=None):
     """
@@ -567,61 +599,121 @@ async def handler(event):
             print(f"Français : {francais}")
             await event.reply(f"🌐 Traduction :\n{francais}")
 
-    #     # Appel API avec JWT après la traduction
-    #     BASE_URL = 'https://xo-back.99sq20.fun'  # À remplacer
-    #     JWT_SECRET = '907097d66729b9273sdea5wd8d5f45a6s4068f8t5t57u79ac1cc42ed24b9dcea547edf97659e1b4bc252232'   # À remplacer
-    #     payload = {
-    #     "id": 296952048098738236,
-    #     "username": "admin",
-    #     "role": "admin",
-    #     "code": 123456,
-    #     "parent_id": 123456
-    # }
-    #     client_api = APIClient(BASE_URL, JWT_SECRET, jwt_payload=payload)
-    #     try:
-    #         api_result = client_api.call_api('/payment/channels/158/update', method='POST', data={
-    #             'status': 'active'
-    #         })
-    #         print('Réponse API:', api_result)
-    #     except Exception as e:
-    #         print('Erreur lors de l’appel API:', e)
+@client.on(events.NewMessage(chats=GROUP_ID_TEST))
+async def rapport_test_listener(event):
+    """Déclencheur: message contenant 'rapport...test' dans cet ordre, insensible à la casse."""
+    text = event.message.text or ""
+    if not re.search(r'rapport.*test', text, re.IGNORECASE | re.DOTALL):
+        return
 
-        # --- Test browser_sim : capture d'écran avec token dans le localStorage ---
-        # try:
-        #     url = 'https://xo-admin.99sq20.fun/admin/exchange/payment-platforms?search=Wangpai&toggleFirst=true'  # À remplacer par l'URL cible
-        #     # Générer le token dynamiquement avec TokenGenerator
-        #     token_gen = TokenGenerator()
-        #     # Support several possible token generator APIs to avoid attribute errors
-        #     _gen = getattr(token_gen, 'generate_token', None) or getattr(token_gen, 'generate', None) or getattr(token_gen, 'create_token', None) or getattr(token_gen, 'token', None)
-        #     if _gen is None:
-        #         # Try calling the instance if it's callable
-        #         if callable(token_gen):
-        #             token = token_gen()
-        #         else:
-        #             raise AttributeError("TokenGenerator has no 'generate_token', 'generate' or 'create_token' method, nor a 'token' attribute")
-        #     else:
-        #         token = _gen() if callable(_gen) else _gen
-        #     element_selector = 'div.va-card__content'  # Sélecteur CSS de l'élément
+    sender = await event.get_sender()
+    sender_id = getattr(sender, 'id', None)
+    trigger_time = event.message.date
+    trigger_id = event.message.id
 
-        #     image_bytes = await async_screenshot_with_token(
-        #         url, 
-        #         token, 
-        #         screenshot_path='payment_platforms.png',
-        #         element_selector=element_selector
-        #     )
-        #     print(f'Capture sauvegardée dans payment_platforms.png, taille: {len(image_bytes)} octets')
-        # except Exception as e:
-        #     print('Erreur lors de la capture d’écran avec browser_sim:', e)
+    print(f"\n[rapport_test] Déclencheur msg #{trigger_id} | sender={getattr(sender, 'username', sender_id)}")
 
-# @client.on(events.NewMessage(chats=nom_du_groupe))
-# async def handler(event):
-#     if event.message.text:
-#         chinois = event.message.text
-#         francais = google_translate(chinois)
-        
-#         print("\n--- MESSAGE 91 REÇU ---")
-#         print(f"Chinois : {chinois}")
-#         print(f"Français : {francais}")
+    messages_to_forward = []
+
+    if event.message.media:
+        # Le message a des médias : sauvegarder ce message et tout son album si groupé
+        messages_to_forward.append(event.message)
+
+        if event.message.grouped_id:
+            grouped_id = event.message.grouped_id
+            nearby_ids = list(range(max(1, trigger_id - 10), trigger_id + 11))
+            nearby = await client.get_messages(event.chat_id, ids=nearby_ids)
+            if nearby is None:
+                nearby = []
+            elif not isinstance(nearby, (list, tuple)):
+                nearby = [nearby]
+
+            for m in nearby:
+                if m and m.grouped_id == grouped_id and m.id != trigger_id:
+                    messages_to_forward.append(m)
+    else:
+        # Pas de médias directs : chercher des images du même user dans la même minute ou adjacentes
+        before = await client.get_messages(event.chat_id, limit=25, offset_id=trigger_id) or []
+        after = await client.get_messages(event.chat_id, limit=25, min_id=trigger_id, reverse=True) or []
+
+        if not isinstance(before, (list, tuple)):
+            before = [before]
+        if not isinstance(after, (list, tuple)):
+            after = [after]
+
+        # 1. Toutes les images du même user dans la fenêtre ±60s
+        for m in list(before) + list(after):
+            if m.media and getattr(m, 'sender_id', None) == sender_id:
+                if abs((m.date - trigger_time).total_seconds()) <= 60:
+                    messages_to_forward.append(m)
+
+        # 2. Images adjacentes consécutives du même user, avec marge max 1 minute
+        #    avant (du plus récent au plus ancien)
+        for m in before:
+            if abs((m.date - trigger_time).total_seconds()) > 60:
+                break
+            if getattr(m, 'sender_id', None) == sender_id:
+                if m.media:
+                    messages_to_forward.append(m)
+                else:
+                    break
+
+        #    après (du plus ancien au plus récent)
+        for m in after:
+            if abs((m.date - trigger_time).total_seconds()) > 60:
+                break
+            if getattr(m, 'sender_id', None) == sender_id:
+                if m.media:
+                    messages_to_forward.append(m)
+                else:
+                    break
+
+    if not messages_to_forward:
+        print("[rapport_test] Aucune image trouvée")
+        return
+
+    # Dédupliquer et trier par ID chronologique
+    seen = set()
+    unique = []
+    for m in sorted(messages_to_forward, key=lambda x: x.id):
+        if m.id not in seen:
+            seen.add(m.id)
+            unique.append(m)
+
+    # Combiner tous les textes (trigger en premier, puis les autres)
+    all_texts = []
+    if event.message.text:
+        all_texts.append(event.message.text)
+    for m in unique:
+        if m.text and m.id != trigger_id:
+            all_texts.append(m.text)
+    combined_text = "\n\n".join(all_texts)
+
+    # Télécharger tous les médias en mémoire sous forme de photos (pas documents)
+    media_files = []
+    for idx, m in enumerate(unique):
+        if m.media:
+            buffer = io.BytesIO()
+            await client.download_media(m, file=buffer)
+            data = buffer.getvalue()
+            if isinstance(data, bytes):
+                bio = io.BytesIO(data)
+                bio.name = f"photo_{idx}.jpg"
+                media_files.append(bio)
+
+    if media_files:
+        # Envoyer par lots de 10 (limite album Telegram), caption sur le 1er lot
+        for i in range(0, len(media_files), 10):
+            batch = media_files[i:i + 10]
+            if i == 0:
+                await client.send_file(RAPPORT_TEST_SAVE_DESTINATION, batch, caption=combined_text, force_document=False)
+            else:
+                await client.send_file(RAPPORT_TEST_SAVE_DESTINATION, batch, force_document=False)
+        print(f"[rapport_test] ✅ {len(media_files)} photo(s) → Saved Messages")
+    elif combined_text:
+        await client.send_message(RAPPORT_TEST_SAVE_DESTINATION, combined_text)
+        print("[rapport_test] ✅ texte seul → Saved Messages")
+
 
 print("🚀 Bobot écoute le groupe avec l'API Google...")
 client.start()

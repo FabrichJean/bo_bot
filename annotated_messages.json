@@ -1,0 +1,140 @@
+{
+  "version": "1.0",
+  "created_at": "2026-05-14T21:23:36.931938",
+  "total_annotations": 8,
+  "messages": [
+    {
+      "id": "msg_00001",
+      "original_text": "【Zhonghua中华-萝莉岛】\n老板  1007 微信H5 金额  30-500 恢复了可以开机了",
+      "normalized_text": "【Zhonghua中华-萝莉岛】\n老板  1007 微信H5 金额  30-500 恢复了可以开机了",
+      "source": "manual",
+      "added_at": "2026-05-14T21:24:54.543905",
+      "annotation": {
+        "action": "deactivate",
+        "target_type": "platform",
+        "identifier": "Zhonghua"
+      },
+      "annotator": "web-ui",
+      "annotation_date": "2026-05-14T21:25:32.583218",
+      "confidence": 1.0
+    },
+    {
+      "id": "msg_00002",
+      "original_text": "【Zhonghua中华-萝莉岛】\n老板  1007 微信H5 先切停 十分钟",
+      "normalized_text": "【Zhonghua中华-萝莉岛】\n老板  1007 微信H5 先切停 十分钟",
+      "source": "manual",
+      "added_at": "2026-05-14T21:26:24.468877",
+      "annotation": {
+        "action": "deactivate",
+        "target_type": "platform",
+        "identifier": "Zhonghua, Wechat"
+      },
+      "annotator": "web-ui",
+      "annotation_date": "2026-05-14T21:30:17.396634",
+      "confidence": 1.0
+    },
+    {
+      "id": "msg_00003",
+      "original_text": "【Zhonghua中华-萝莉岛】\n1007  可以开机了",
+      "normalized_text": "【Zhonghua中华-萝莉岛】\n1007  可以开机了",
+      "source": "manual",
+      "added_at": "2026-05-14T21:26:43.301977",
+      "annotation": {
+        "action": "activate",
+        "target_type": "platform",
+        "identifier": "Zhonghua"
+      },
+      "annotator": "web-ui",
+      "annotation_date": "2026-05-14T21:30:51.783921",
+      "confidence": 1.0
+    },
+    {
+      "id": "msg_00004",
+      "original_text": "【Zhonghua中华-萝莉岛】\n1007  切停十分钟",
+      "normalized_text": "【Zhonghua中华-萝莉岛】\n1007  切停十分钟",
+      "source": "manual",
+      "added_at": "2026-05-14T21:27:00.128211",
+      "annotation": {
+        "action": "deactivate",
+        "target_type": "platform",
+        "identifier": "Zhonghua, 1007"
+      },
+      "annotator": "web-ui",
+      "annotation_date": "2026-05-14T21:31:14.410291",
+      "confidence": 1.0
+    },
+    {
+      "id": "msg_00005",
+      "original_text": "【Zhonghua中华-萝莉岛】\n先切一下  系统掉了",
+      "normalized_text": "【Zhonghua中华-萝莉岛】\n先切一下  系统掉了",
+      "source": "manual",
+      "added_at": "2026-05-14T21:28:16.519980",
+      "annotation": {
+        "action": "deactivate",
+        "target_type": "platform",
+        "identifier": "Zhonghua"
+      },
+      "annotator": "web-ui",
+      "annotation_date": "2026-05-14T21:31:37.471791",
+      "confidence": 1.0
+    },
+    {
+      "id": "msg_00006",
+      "original_text": "【G63-萝莉岛】\n哥哥 微信h5  1-4费率26 5-100费率24 可以开启了",
+      "normalized_text": "【G63-萝莉岛】\n哥哥 微信h5  1-4费率26 5-100费率24 可以开启了",
+      "source": "manual",
+      "added_at": "2026-05-14T21:28:29.884469",
+      "annotation": {
+        "action": "activate",
+        "target_type": "platform",
+        "identifier": "G63, wechat"
+      },
+      "annotator": "web-ui",
+      "annotation_date": "2026-05-14T21:32:01.698439",
+      "confidence": 1.0
+    },
+    {
+      "id": "msg_00007",
+      "original_text": "【G63-萝莉岛】\n微信可以进了  哥",
+      "normalized_text": "【G63-萝莉岛】\n微信可以进了  哥",
+      "source": "manual",
+      "added_at": "2026-05-14T21:29:34.935582",
+      "annotation": {
+        "action": "activate",
+        "target_type": "platform",
+        "identifier": "G63, WeChat"
+      },
+      "annotator": "web-ui",
+      "annotation_date": "2026-05-14T21:32:23.960199",
+      "confidence": 1.0
+    },
+    {
+      "id": "msg_00008",
+      "original_text": "【G63-萝莉岛】\n微信先切下",
+      "normalized_text": "【G63-萝莉岛】\n微信先切下",
+      "source": "manual",
+      "added_at": "2026-05-14T21:34:29.952865",
+      "annotation": {
+        "action": "activate",
+        "target_type": "platform",
+        "identifier": "G63, WeChat"
+      },
+      "annotator": "web-ui",
+      "annotation_date": "2026-05-14T21:35:20.070865",
+      "confidence": 1.0
+    }
+  ],
+  "stats": {
+    "by_action": {
+      "deactivate": 4,
+      "activate": 4
+    },
+    "by_target_type": {
+      "platform": 8
+    },
+    "by_annotator": {
+      "web-ui": 8
+    }
+  },
+  "last_updated": "2026-05-14T21:35:20.070909"
+}

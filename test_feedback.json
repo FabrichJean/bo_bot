@@ -1,0 +1,136 @@
+{
+  "version": "1.0",
+  "created_at": "2026-05-14T21:44:47.140039",
+  "total_annotations": 6,
+  "messages": [
+    {
+      "id": "msg_00001",
+      "original_text": "【Zhonghua中华-萝莉岛】\n老板  1007 微信 可以开机了",
+      "normalized_text": "【Zhonghua中华-萝莉岛】\n老板  1007 微信 可以开机了",
+      "source": "test_feedback",
+      "added_at": "2026-05-14T21:46:42.750191",
+      "annotation": {
+        "action": "activate",
+        "target_type": "platform",
+        "identifier": "Wechat"
+      },
+      "annotator": "test_feedback",
+      "annotation_date": "2026-05-14T21:46:42.752357",
+      "confidence": 1
+    },
+    {
+      "id": "msg_00002",
+      "original_text": "【Zhonghua中华-萝莉岛】\n1007  切停十分钟",
+      "normalized_text": "【Zhonghua中华-萝莉岛】\n1007  切停十分钟",
+      "source": "test_feedback",
+      "added_at": "2026-05-14T21:47:06.765150",
+      "annotation": {
+        "action": "deactivate",
+        "target_type": "platform",
+        "identifier": "Wechat"
+      },
+      "annotator": "test_feedback",
+      "annotation_date": "2026-05-14T21:47:06.766820",
+      "confidence": 1
+    },
+    {
+      "id": "msg_00003",
+      "original_text": "【G63-萝莉岛】\n哥哥 微信h5 1-4费率27  5-100费率24  可以开启了",
+      "normalized_text": "【G63-萝莉岛】\n哥哥 微信h5 1-4费率27  5-100费率24  可以开启了",
+      "source": "test_feedback",
+      "added_at": "2026-05-14T21:47:42.931154",
+      "annotation": {
+        "action": "activate",
+        "target_type": "platform",
+        "identifier": "G63, Wechat"
+      },
+      "annotator": "test_feedback",
+      "annotation_date": "2026-05-14T21:47:42.932489",
+      "confidence": 1
+    },
+    {
+      "id": "msg_00004",
+      "original_text": "【G63-萝莉岛】\n微信切下 宝",
+      "normalized_text": "【G63-萝莉岛】\n微信切下 宝",
+      "source": "test_feedback",
+      "added_at": "2026-05-14T21:48:32.610026",
+      "annotation": {
+        "action": "deactivate",
+        "target_type": "platform",
+        "identifier": "G63, Wechat"
+      },
+      "annotator": "test_feedback",
+      "annotation_date": "2026-05-14T21:53:53.569757",
+      "confidence": 1
+    }
+  ],
+  "stats": {
+    "by_action": {
+      "activate": 2,
+      "deactivate": 4
+    },
+    "by_target_type": {
+      "platform": 6
+    },
+    "by_annotator": {
+      "test_feedback": 6
+    }
+  },
+  "feedback": [
+    {
+      "timestamp": "2026-05-14T21:46:42.749786",
+      "message": "【Zhonghua中华-萝莉岛】\n老板  1007 微信 可以开机了",
+      "user_verdict": "corrected",
+      "corrected_action": "activate",
+      "corrected_target_type": "platform",
+      "corrected_identifier": "Wechat",
+      "confidence": 1
+    },
+    {
+      "timestamp": "2026-05-14T21:47:06.764921",
+      "message": "【Zhonghua中华-萝莉岛】\n1007  切停十分钟",
+      "user_verdict": "corrected",
+      "corrected_action": "deactivate",
+      "corrected_target_type": "platform",
+      "corrected_identifier": "Wechat",
+      "confidence": 1
+    },
+    {
+      "timestamp": "2026-05-14T21:47:42.930961",
+      "message": "【G63-萝莉岛】\n哥哥 微信h5 1-4费率27  5-100费率24  可以开启了",
+      "user_verdict": "corrected",
+      "corrected_action": "activate",
+      "corrected_target_type": "platform",
+      "corrected_identifier": "G63, Wechat",
+      "confidence": 1
+    },
+    {
+      "timestamp": "2026-05-14T21:48:32.609986",
+      "message": "【G63-萝莉岛】\n微信切下 宝",
+      "user_verdict": "corrected",
+      "corrected_action": "deactivate",
+      "corrected_target_type": "platform",
+      "corrected_identifier": "G63, Wechat",
+      "confidence": 1
+    },
+    {
+      "timestamp": "2026-05-14T21:48:46.519581",
+      "message": "【G63-萝莉岛】\n微信切下 宝",
+      "user_verdict": "corrected",
+      "corrected_action": "deactivate",
+      "corrected_target_type": "platform",
+      "corrected_identifier": "G63, Wechat",
+      "confidence": 1
+    },
+    {
+      "timestamp": "2026-05-14T21:53:53.569462",
+      "message": "【G63-萝莉岛】\n微信切下 宝",
+      "user_verdict": "corrected",
+      "corrected_action": "deactivate",
+      "corrected_target_type": "platform",
+      "corrected_identifier": "G63, Wechat",
+      "confidence": 1
+    }
+  ],
+  "last_updated": "2026-05-14T21:53:53.571719"
+}

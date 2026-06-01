@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 Test du Modèle - Système Intelligent</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        header {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+        
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 1em;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-card h3 {
+            font-size: 1.8em;
+            margin-bottom: 5px;
+        }
+        
+        .stat-card p {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        
+        .main-content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+        
+        h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+        
+        .test-input {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 1em;
+            font-family: inherit;
+        }
+        
+        input:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        textarea {
+            min-height: 80px;
+            resize: vertical;
+            font-family: 'SimSun', serif;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .result-box {
+            background: #f8f9ff;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            display: none;
+        }
+        
+        .result-box.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .result-item {
+            display: grid;
+            grid-template-columns: 150px 1fr;
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .result-item:last-child {
+            border-bottom: none;
+        }
+        
+        .result-label {
+            font-weight: 600;
+            color: #667eea;
+        }
+        
+        .result-value {
+            color: #333;
+            font-size: 1.05em;
+        }
+        
+        .confidence {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        
+        .confidence.high {
+            background: #4ade80;
+        }
+        
+        .confidence.medium {
+            background: #f59e0b;
+        }
+        
+        .confidence.low {
+            background: #ef4444;
+        }
+        
+        .verdict-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .verdict-btn {
+            padding: 15px;
+            font-weight: 600;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            background: white;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .verdict-btn:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+        
+        .verdict-btn.correct {
+            border-color: #4ade80;
+            color: #4ade80;
+        }
+        
+        .verdict-btn.correct:hover {
+            background: #f0fdf4;
+        }
+        
+        .verdict-btn.corrected {
+            border-color: #f59e0b;
+            color: #f59e0b;
+        }
+        
+        .verdict-btn.corrected:hover {
+            background: #fffbeb;
+        }
+        
+        .verdict-btn.wrong {
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+        
+        .verdict-btn.wrong:hover {
+            background: #fef2f2;
+        }
+        
+        .correction-form {
+            background: #fffbeb;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+            display: none;
+            border: 2px solid #f59e0b;
+        }
+        
+        .correction-form.show {
+            display: block;
+        }
+        
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        a, .nav-btn {
+            padding: 10px 20px;
+            background: #f0f0f0;
+            color: #333;
+            text-decoration: none;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        a:hover, .nav-btn:hover {
+            background: #ddd;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(102, 126, 234, 0.3);
+            border-radius: 50%;
+            border-top-color: #667eea;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .message {
+            padding: 12px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        
+        .success-message {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .error-message {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .info-message {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .example-values {
+            display: flex;
+            gap: 5px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .example {
+            padding: 6px 12px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            font-size: 0.85em;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .example:hover {
+            background: #ddd;
+        }
+        
+        @media (max-width: 768px) {
+            .verdict-buttons {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🧪 Test du Modèle</h1>
+            <p class="subtitle">Testez le modèle et nourrissez-le avec vos retours</p>
+            
+            <div class="stats-grid" id="statsContainer">
+                <div class="stat-card">
+                    <h3 id="totalTests">0</h3>
+                    <p>Tests</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="correctTests">0</h3>
+                    <p>Corrects</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="accuracy">0%</h3>
+                    <p>Précision</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="trained">0</h3>
+                    <p>Entraînés</p>
+                </div>
+            </div>
+        </header>
+        
+        <div class="main-content">
+            <h2>📝 Entrez un message pour tester</h2>
+            
+            <div class="test-input">
+                <div>
+                    <label for="testMessage">Message en chinois:</label>
+                    <textarea id="testMessage" placeholder="例如: 激活 Wangpai 平台"></textarea>
+                    <div class="example-values">
+                        <span class="example" onclick="setExample('启用 Wangpai 平台')">启用 Wangpai 平台</span>
+                        <span class="example" onclick="setExample('关闭 ID:156 频道')">关闭 ID:156 频道</span>
+                        <span class="example" onclick="setExample('激活 Jincheng 频道')">激活 Jincheng 频道</span>
+                    </div>
+                </div>
+                
+                <button onclick="testMessage()" style="width: 100%; padding: 15px;">
+                    🚀 Tester le modèle
+                </button>
+            </div>
+            
+            <!-- Résultats -->
+            <div id="resultBox" class="result-box">
+                <h3>📊 Résultats</h3>
+                
+                <div class="result-item">
+                    <span class="result-label">Message:</span>
+                    <span class="result-value" id="resultMessage"></span>
+                </div>
+                
+                <div class="result-item">
+                    <span class="result-label">Action:</span>
+                    <span class="result-value" id="resultAction"></span>
+                </div>
+                
+                <div class="result-item">
+                    <span class="result-label">Type:</span>
+                    <span class="result-value" id="resultType"></span>
+                </div>
+                
+                <div class="result-item">
+                    <span class="result-label">Identifiant:</span>
+                    <span class="result-value" id="resultIdentifier"></span>
+                </div>
+                
+                <div class="result-item">
+                    <span class="result-label">Confiance:</span>
+                    <span class="result-value">
+                        <span class="confidence" id="confidenceBadge">0%</span>
+                    </span>
+                </div>
+                
+                <!-- Verdict -->
+                <div style="margin-top: 20px;">
+                    <h3>✅ Verdict</h3>
+                    <div class="verdict-buttons">
+                        <button class="verdict-btn correct" onclick="submitVerdict('correct')">
+                            ✅ Correct!
+                        </button>
+                        <button class="verdict-btn corrected" onclick="submitVerdict('corrected')">
+                            ✏️ Corriger
+                        </button>
+                        <button class="verdict-btn wrong" onclick="submitVerdict('wrong')">
+                            ❌ Faux
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Formulaire de correction -->
+                <div id="correctionForm" class="correction-form">
+                    <h4>Entrez les valeurs correctes:</h4>
+                    
+                    <div style="margin-top: 15px; display: grid; gap: 10px;">
+                        <div>
+                            <label for="correctAction">Action:</label>
+                            <select id="correctAction" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                                <option value="activate">activate</option>
+                                <option value="deactivate">deactivate</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label for="correctType">Type:</label>
+                            <select id="correctType" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                                <option value="platform">platform</option>
+                                <option value="channel">channel</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label for="correctIdentifier">Identifiant:</label>
+                            <input type="text" id="correctIdentifier" placeholder="ex: Wangpai, 156" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                        </div>
+                        
+                        <button onclick="submitCorrectedVerdict()" style="width: 100%; padding: 12px; background: #f59e0b; margin-top: 10px;">
+                            ✅ Soumettre la correction
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Messages -->
+            <div id="messageBox"></div>
+            
+            <!-- Navigation -->
+            <div class="nav-buttons">
+                <a href="/test/results">📊 Résultats</a>
+                <a href="/test/history">📋 Historique</a>
+                <button class="nav-btn" onclick="clearHistory()">🗑️ Effacer historique</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentTestResult = null;
+        let currentVerdict = null;
+        
+        function setExample(text) {
+            document.getElementById('testMessage').value = text;
+            testMessage();
+        }
+        
+        async function testMessage() {
+            const message = document.getElementById('testMessage').value.trim();
+            
+            if (!message) {
+                showMessage('Entrez un message!', 'error');
+                return;
+            }
+            
+            showMessage('Test en cours...', 'info');
+            
+            try {
+                const response = await fetch('/api/test/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentTestResult = data.result;
+                    displayResult(data.result);
+                    document.getElementById('resultBox').classList.add('show');
+                    updateStats();
+                    clearMessage();
+                } else {
+                    showMessage('Erreur: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showMessage('Erreur: ' + error.message, 'error');
+            }
+        }
+        
+        function displayResult(result) {
+            document.getElementById('resultMessage').textContent = result.message;
+            document.getElementById('resultAction').textContent = result.model_prediction.action || '?';
+            document.getElementById('resultType').textContent = result.model_prediction.target_type || '?';
+            document.getElementById('resultIdentifier').textContent = result.model_prediction.identifier || '?';
+            
+            const confidence = Math.round(result.confidence * 100);
+            const badge = document.getElementById('confidenceBadge');
+            badge.textContent = confidence + '%';
+            
+            // Couleur selon confiance
+            badge.className = 'confidence';
+            if (confidence >= 80) badge.classList.add('high');
+            else if (confidence >= 60) badge.classList.add('medium');
+            else badge.classList.add('low');
+        }
+        
+        function submitVerdict(verdict) {
+            currentVerdict = verdict;
+            
+            if (verdict === 'corrected') {
+                document.getElementById('correctionForm').classList.add('show');
+            } else {
+                document.getElementById('correctionForm').classList.remove('show');
+                submitFeedback(verdict);
+            }
+        }
+        
+        function submitCorrectedVerdict() {
+            const action = document.getElementById('correctAction').value;
+            const target_type = document.getElementById('correctType').value;
+            const identifier = document.getElementById('correctIdentifier').value.trim();
+            
+            if (!identifier) {
+                alert('Entrez l\'identifiant!');
+                return;
+            }
+            
+            submitFeedback('corrected', action, target_type, identifier);
+        }
+        
+        async function submitFeedback(verdict, action = null, target_type = null, identifier = null) {
+            if (!currentTestResult) return;
+            
+            const pred = currentTestResult.model_prediction;
+            const finalAction = action || pred.action;
+            const finalType = target_type || pred.target_type;
+            const finalId = identifier || pred.identifier;
+            
+            try {
+                const response = await fetch('/api/test/feedback', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: currentTestResult.message,
+                        verdict: verdict,
+                        action: finalAction,
+                        target_type: finalType,
+                        identifier: finalId,
+                        confidence: 1.0
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    let msg = '';
+                    if (verdict === 'correct') {
+                        msg = '✅ Feedback enregistré! Modèle amélioré.';
+                    } else if (verdict === 'corrected') {
+                        msg = '✏️ Correction enregistrée! Modèle réentraîné.';
+                    } else {
+                        msg = '❌ Enregistré comme erreur.';
+                    }
+                    
+                    showMessage(msg, 'success');
+                    
+                    // Réinitialiser
+                    setTimeout(() => {
+                        document.getElementById('testMessage').value = '';
+                        document.getElementById('resultBox').classList.remove('show');
+                        document.getElementById('correctionForm').classList.remove('show');
+                        updateStats();
+                    }, 1500);
+                }
+            } catch (error) {
+                showMessage('Erreur: ' + error.message, 'error');
+            }
+        }
+        
+        async function updateStats() {
+            try {
+                const response = await fetch('/api/test/stats');
+                const data = await response.json();
+                
+                document.getElementById('totalTests').textContent = data.total_tests;
+                document.getElementById('correctTests').textContent = data.correct + data.corrected;
+                document.getElementById('accuracy').textContent = data.accuracy_percent + '%';
+                document.getElementById('trained').textContent = data.feedback_used_for_training;
+            } catch (error) {
+                console.error('Erreur stats:', error);
+            }
+        }
+        
+        async function clearHistory() {
+            if (!confirm('Êtes-vous sûr de vouloir effacer l\'historique?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/test/clear', {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    showMessage('Historique effacé!', 'success');
+                    updateStats();
+                }
+            } catch (error) {
+                showMessage('Erreur: ' + error.message, 'error');
+            }
+        }
+        
+        function showMessage(msg, type) {
+            const msgBox = document.getElementById('messageBox');
+            msgBox.innerHTML = `<div class="message ${type}-message">${msg}</div>`;
+        }
+        
+        function clearMessage() {
+            document.getElementById('messageBox').innerHTML = '';
+        }
+        
+        // Charger les stats au démarrage
+        window.addEventListener('load', updateStats);
+    </script>
+</body>
+</html>

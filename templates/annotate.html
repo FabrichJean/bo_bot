@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📝 Annoter - Système de Données Chinoises</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        header {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        header h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .progress {
+            background: #f0f0f0;
+            border-radius: 8px;
+            height: 8px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+        
+        .main-card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+        
+        .finished {
+            text-align: center;
+            padding: 50px 30px;
+        }
+        
+        .finished h2 {
+            color: #667eea;
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+        
+        .finished p {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .message-display {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            margin: 20px 0;
+        }
+        
+        .message-text {
+            font-size: 1.3em;
+            color: #333;
+            font-weight: 500;
+            margin-bottom: 10px;
+            font-family: 'SimSun', 'Noto Sans CJK SC', serif;
+        }
+        
+        .message-id {
+            font-size: 0.85em;
+            color: #999;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 1.05em;
+        }
+        
+        select, input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 1em;
+            font-family: inherit;
+        }
+        
+        select:focus, input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .help-text {
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 30px;
+        }
+        
+        button {
+            padding: 15px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-submit {
+            background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+            color: white;
+            grid-column: 1 / -1;
+        }
+        
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(74, 222, 128, 0.4);
+        }
+        
+        .btn-invalid {
+            background: #fbbf24;
+            color: white;
+        }
+        
+        .btn-invalid:hover {
+            background: #f59e0b;
+            transform: translateY(-2px);
+        }
+        
+        .btn-back {
+            background: #f0f0f0;
+            color: #333;
+        }
+        
+        .btn-back:hover {
+            background: #e0e0e0;
+        }
+        
+        .message-area {
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 10px;
+        }
+        
+        .success-message {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .error-message {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 30px;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(102, 126, 234, 0.3);
+            border-radius: 50%;
+            border-top-color: #667eea;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .confidence-slider {
+            width: 100%;
+        }
+        
+        .slider-value {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            margin-left: 10px;
+        }
+        
+        .example-values {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+            justify-content: space-between;
+        }
+        
+        .example {
+            padding: 8px 12px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            font-size: 0.85em;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .example:hover {
+            background: #ddd;
+        }
+        
+        @media (max-width: 600px) {
+            .button-group {
+                grid-template-columns: 1fr;
+            }
+            
+            .message-text {
+                font-size: 1.1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📝 Annotation de Messages</h1>
+            <p id="progress-text">Message <span id="current">1</span> sur <span id="total">1</span></p>
+            <div class="progress">
+                <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+            </div>
+        </header>
+        
+        <div class="main-card">
+            {% if finished %}
+                <div class="finished">
+                    <h2>✅ Annotation terminée!</h2>
+                    <p>Tous les messages ont été annotés. Félicitations!</p>
+                    <p>Vous pouvez maintenant exporter les données pour entraîner le modèle.</p>
+                    <a href="/" style="display: inline-block; padding: 12px 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; border-radius: 6px; font-weight: 600;">
+                        🏠 Retour à l'accueil
+                    </a>
+                </div>
+            {% elif message %}
+                <div id="messageContainer">
+                    <div class="message-display">
+                        <div class="message-text" id="messageText">{{ message.normalized_text }}</div>
+                        <div class="message-id">ID: {{ message.id }}</div>
+                    </div>
+                    
+                    <form id="annotationForm" onsubmit="submitAnnotation(event)">
+                        <div class="form-group">
+                            <label for="action">🎯 Action</label>
+                            <select id="action" required>
+                                <option value="">-- Sélectionnez --</option>
+                                <option value="activate">Activer (Activate)</option>
+                                <option value="deactivate">Désactiver (Deactivate)</option>
+                            </select>
+                            <div class="help-text">Que doit faire le message?</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="target_type">🎪 Type de cible</label>
+                            <select id="target_type" required>
+                                <option value="">-- Sélectionnez --</option>
+                                <option value="platform">Plateforme</option>
+                                <option value="channel">Chaîne/Channel</option>
+                            </select>
+                            <div class="help-text">Est-ce une plateforme ou une chaîne?</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="identifier">🏷️ Identifiant</label>
+                            <input type="text" id="identifier" placeholder="Ex: Wangpai, 156, jincheng" required>
+                            <div class="help-text">Nom ou ID de la plateforme/chaîne</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>
+                                ⭐ Confiance: <span class="slider-value" id="confidenceValue">100%</span>
+                            </label>
+                            <input type="range" id="confidence" min="0" max="100" value="100" class="confidence-slider" onchange="updateConfidenceValue()">
+                            <div class="example-values">
+                                <span class="example" onclick="setConfidence(50)">50%</span>
+                                <span class="example" onclick="setConfidence(75)">75%</span>
+                                <span class="example" onclick="setConfidence(90)">90%</span>
+                                <span class="example" onclick="setConfidence(100)">100%</span>
+                            </div>
+                            <div class="help-text">À quel point êtes-vous sûr de cette annotation?</div>
+                        </div>
+                        
+                        <div class="button-group">
+                            <button type="button" class="btn-invalid" onclick="markInvalid()">⚠️ Invalide</button>
+                            <button type="submit" class="btn-submit">✅ Annoter</button>
+                        </div>
+                    </form>
+                    
+                    <div id="statusMessage"></div>
+                </div>
+            {% else %}
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p style="margin-top: 20px; color: #666;">Chargement du message...</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        const messageId = '{{ message.id if message else "" }}';
+        const total = {{ total }};
+        const current = {{ current }};
+        
+        function updateProgressBar() {
+            const percent = ((current - 1) / total) * 100;
+            document.getElementById('progressBar').style.width = percent + '%';
+            document.getElementById('current').textContent = current;
+            document.getElementById('total').textContent = total;
+        }
+        
+        function updateConfidenceValue() {
+            const value = document.getElementById('confidence').value;
+            document.getElementById('confidenceValue').textContent = value + '%';
+        }
+        
+        function setConfidence(value) {
+            document.getElementById('confidence').value = value;
+            updateConfidenceValue();
+        }
+        
+        async function submitAnnotation(event) {
+            event.preventDefault();
+            
+            const action = document.getElementById('action').value;
+            const target_type = document.getElementById('target_type').value;
+            const identifier = document.getElementById('identifier').value;
+            const confidence = parseInt(document.getElementById('confidence').value) / 100;
+            
+            const button = event.target.querySelector('.btn-submit');
+            button.disabled = true;
+            button.innerHTML = '<span class="spinner" style="width: 20px; height: 20px;"></span> En cours...';
+            
+            try {
+                const response = await fetch('/api/annotate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message_id: messageId,
+                        action: action,
+                        target_type: target_type,
+                        identifier: identifier,
+                        confidence: confidence,
+                        annotator: 'web-ui'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const status = document.getElementById('statusMessage');
+                    status.innerHTML = '<div class="message-area success-message">✅ Message annoté! Chargement suivant...</div>';
+                    
+                    setTimeout(() => {
+                        if (data.remaining === 0) {
+                            location.href = '/annotate';
+                        } else {
+                            location.reload();
+                        }
+                    }, 1000);
+                } else {
+                    alert('Erreur: ' + data.error);
+                    button.disabled = false;
+                    button.innerHTML = '✅ Annoter';
+                }
+            } catch (error) {
+                alert('Erreur: ' + error.message);
+                button.disabled = false;
+                button.innerHTML = '✅ Annoter';
+            }
+        }
+        
+        async function markInvalid() {
+            if (!confirm('Êtes-vous sûr? Ce message sera marqué comme invalide.')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/invalid', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message_id: messageId,
+                        reason: 'Format invalide ou incompréhensible',
+                        annotator: 'web-ui'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const status = document.getElementById('statusMessage');
+                    status.innerHTML = '<div class="message-area success-message">✅ Marqué comme invalide. Chargement suivant...</div>';
+                    
+                    setTimeout(() => {
+                        if (data.remaining === 0) {
+                            location.href = '/annotate';
+                        } else {
+                            location.reload();
+                        }
+                    }, 1000);
+                }
+            } catch (error) {
+                alert('Erreur: ' + error.message);
+            }
+        }
+        
+        // Mettre à jour la barre de progression au chargement
+        window.addEventListener('load', updateProgressBar);
+    </script>
+</body>
+</html>
