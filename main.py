@@ -715,6 +715,20 @@ async def rapport_test_listener(event):
         print("[rapport_test] ✅ texte seul → Saved Messages")
 
 
+@client.on(events.NewMessage(chats=GROUP_MAIN, from_users=92983875))
+async def jkbot_relay_listener(event):
+    """Messages de JKbot (92983875) dans GROUP_MAIN → traduit en FR → GROUP_ID_TEST."""
+    text = event.message.text
+    if not text:
+        return
+
+    print(f"\n[jkbot_relay] Message reçu : {text[:80]}")
+    traduction = google_translate(text)
+    print(f"[jkbot_relay] Traduction : {traduction[:80]}")
+
+    await client.send_message(GROUP_ID_TEST, f"🌐 **[JKbot]** {traduction}")
+
+
 print("🚀 Bobot écoute le groupe avec l'API Google...")
 client.start()
 client.run_until_disconnected()
