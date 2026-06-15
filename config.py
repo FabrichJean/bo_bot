@@ -7,7 +7,7 @@ TELEGRAM_SESSION_NAME = 'session_bobot'
 
 # --- GROUPES ---
 GROUP_MAIN = '91bot运维通知群'
-GROUP_ID_TEST = -5142068832
+GROUP_ID_TEST = 4434387102
 
 
 # --- CONNEXION ---

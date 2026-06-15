@@ -593,11 +593,6 @@ async def handler(event):
             # Envoyer la réponse seulement si elle n'est pas None (pour les commandes qui envoient directement un fichier)
             if result:
                 await event.reply(result)
-        else:
-            # Sinon, traduire le message
-            francais = google_translate(chinois)
-            print(f"Français : {francais}")
-            await event.reply(f"🌐 Traduction :\n{francais}")
 
 @client.on(events.NewMessage(chats=GROUP_ID_TEST))
 async def rapport_test_listener(event):
@@ -715,7 +710,7 @@ async def rapport_test_listener(event):
         print("[rapport_test] ✅ texte seul → Saved Messages")
 
 
-@client.on(events.NewMessage(chats=GROUP_MAIN, from_users=92983875))
+@client.on(events.NewMessage(chats=5205859116, from_users=92983875))
 async def jkbot_relay_listener(event):
     """Messages de JKbot (92983875) dans GROUP_MAIN → traduit en FR → GROUP_ID_TEST."""
     text = event.message.text
