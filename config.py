@@ -7,7 +7,7 @@ TELEGRAM_SESSION_NAME = 'session_bobot'
 
 # --- GROUPES ---
 GROUP_MAIN = '91bot运维通知群'
-GROUP_ID_TEST = 4434387102
+GROUP_ID_TEST = -5142068832
 
 
 # --- CONNEXION ---
@@ -38,7 +38,7 @@ SCREENSHOT_ROOT_DIR = 'screenshots'  # Dossier racine pour tous les screenshots
 SCREENSHOT_ELEMENT_SELECTOR = 'div.va-card__content'
 
 # --- RAPPORT/TEST LISTENER ---
-RAPPORT_TEST_SAVE_DESTINATION = '5205859116'  # ID, username ou 'me' pour les Saved Messages
+RAPPORT_TEST_SAVE_DESTINATION = '4434387102'  # ID, username ou 'me' pour les Saved Messages
 
 # --- COMMANDES ---
 COMMAND_PREFIX = '/'
