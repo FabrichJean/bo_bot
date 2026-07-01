@@ -3,3 +3,4 @@ requirements.txt
 ecosystem.config.js
 venv/
 android_alarm_app/
+session_bobot.session
