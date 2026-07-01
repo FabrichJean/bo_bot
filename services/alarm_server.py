@@ -8,14 +8,15 @@ Protocole JSON minimal :
 - Serveur -> client (à chaque déclenchement) : {"type": "alarm", "sender": ..., "text": ..., "ts": ...}
 
 Une fois authentifié, le client peut aussi envoyer :
-- {"type": "list_chats"} -> {"type": "chats", "data": [{"id":.., "name":..}, ...]}
-- {"type": "list_excludable_users"} -> {"type": "users", "data": [{"id":.., "name":..}, ...]}
+- {"type": "list_chats"} -> {"type": "chats", "data": [{"id":.., "name":.., "photo": <base64|null>}, ...]}
+- {"type": "list_excludable_users"} -> {"type": "users", "data": [{"id":.., "name":.., "photo": <base64|null>}, ...]}
   (membres des chats déjà enregistrés dans watch_store, dédupliqués)
 - {"type": "get_config"} -> {"type": "config", "chats": [...], "excluded_users": [...]}
 - {"type": "set_config", "chats": [...], "excluded_users": [...]} -> {"type": "config_ok"}
 """
 
 import asyncio
+import base64
 import json
 import secrets
 import time
@@ -113,11 +114,25 @@ class AlarmServer:
         else:
             print(f"[AlarmServer] Type de message inconnu : {msg_type!r}")
 
+    async def _photo_base64(self, entity) -> str | None:
+        try:
+            photo_bytes = await self.client.download_profile_photo(entity, file=bytes, download_big=False)
+            if not photo_bytes:
+                return None
+            return base64.b64encode(photo_bytes).decode('ascii')
+        except Exception as e:
+            print(f"[AlarmServer] Erreur récupération photo de profil : {e}")
+            return None
+
     async def _send_chats(self, websocket):
         chats = []
         try:
             async for dialog in self.client.iter_dialogs():
-                chats.append({'id': dialog.id, 'name': dialog.name or str(dialog.id)})
+                chats.append({
+                    'id': dialog.id,
+                    'name': dialog.name or str(dialog.id),
+                    'photo': await self._photo_base64(dialog.entity),
+                })
         except Exception as e:
             print(f"[AlarmServer] Erreur récupération des chats : {e}")
         await websocket.send(json.dumps({'type': 'chats', 'data': chats}))
@@ -128,7 +143,12 @@ class AlarmServer:
             try:
                 async for user in self.client.iter_participants(chat_id, limit=self.PARTICIPANTS_LIMIT):
                     name = user.username or user.first_name or f"User {user.id}"
-                    users[user.id] = {'id': user.id, 'username': user.username, 'name': name}
+                    users[user.id] = {
+                        'id': user.id,
+                        'username': user.username,
+                        'name': name,
+                        'photo': await self._photo_base64(user),
+                    }
             except Exception as e:
                 print(f"[AlarmServer] Erreur récupération des membres de {chat_id} : {e}")
         await websocket.send(json.dumps({'type': 'users', 'data': list(users.values())}))
