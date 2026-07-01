@@ -39,6 +39,13 @@ SCREENSHOT_ELEMENT_SELECTOR = 'div.va-card__content'
 
 # --- RAPPORT/TEST LISTENER ---
 RAPPORT_TEST_SAVE_DESTINATION = '4434387102'  # ID, username ou 'me' pour les Saved Messages
+# Telethon exige un int pour les IDs numériques, pas une string
+if isinstance(RAPPORT_TEST_SAVE_DESTINATION, str) and RAPPORT_TEST_SAVE_DESTINATION.lstrip('-').isdigit():
+    RAPPORT_TEST_SAVE_DESTINATION = int(RAPPORT_TEST_SAVE_DESTINATION)
+
+# --- MESSAGE LOGGER LISTENER ---
+# Usernames ou IDs (sans @) à ignorer, ex: ['jkbot', '92983875']
+EXCLUDED_USERS = []
 
 # --- COMMANDES ---
 COMMAND_PREFIX = '/'

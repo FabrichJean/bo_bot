@@ -6,8 +6,8 @@ Utilise le RuleEngine pour détecter et apprendre automatiquement.
 from typing import Dict, Optional
 from rule_engine import get_rule_engine, MessageExtractor
 from config import CONFIDENCE_THRESHOLDS, BASE_URL
-from api_client import APIClient
-from browser_sim import async_screenshot_with_token
+from services.api_client import APIClient
+from services.browser import async_screenshot_with_token
 
 
 class MessageProcessor:
