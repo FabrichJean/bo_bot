@@ -1,4 +1,4 @@
-screenshots/
+/screenshots/
 requirements.txt
 ecosystem.config.js
 venv/
