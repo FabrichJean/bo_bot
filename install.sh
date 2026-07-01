@@ -1,11 +1,11 @@
 #!/bin/bash
 
 # 🚀 Script d'Installation Automatique
-# Ce script configure l'environnement et vérifie les dépendances
+# Configure l'environnement et installe les dépendances du bot Telegram
 
 echo ""
 echo "========================================================================"
-echo "  🚀 INSTALLATION ET CONFIGURATION DU SYSTÈME"
+echo "  🚀 INSTALLATION ET CONFIGURATION DU BOT"
 echo "========================================================================"
 echo ""
 
@@ -19,56 +19,44 @@ fi
 PYTHON_VERSION=$(python3 --version)
 echo "   $PYTHON_VERSION"
 
-# Créer le répertoire templates s'il n'existe pas
-if [ ! -d "templates" ]; then
-    echo ""
-    echo "📁 Création du répertoire templates..."
-    mkdir -p templates
-    echo "   ✅ Répertoire créé"
+# Détecter le venv utilisé pour faire tourner le bot (ex: ecosystem.config.js
+# pointe vers venv/bin/python en prod). Sans ça, "pip3" peut installer dans le
+# mauvais Python et le bot ne trouve jamais les packages au démarrage.
+PIP_BIN="pip3"
+PYTHON_BIN="python3"
+if [ -x "venv/bin/pip" ]; then
+    PIP_BIN="venv/bin/pip"
+    PYTHON_BIN="venv/bin/python"
+    echo "   📦 venv détecté : venv/"
+elif [ -x ".venv/bin/pip" ]; then
+    PIP_BIN=".venv/bin/pip"
+    PYTHON_BIN=".venv/bin/python"
+    echo "   📦 venv détecté : .venv/"
+else
+    echo "   ⚠️  Aucun venv trouvé (venv/ ou .venv/) — installation avec pip3 global"
 fi
 
-# Installer les dépendances Python
+# Installer les dépendances Python depuis requirements.txt
 echo ""
-echo "📦 Installation des dépendances Python..."
+echo "📦 Installation des dépendances Python (requirements.txt)..."
+echo "   Avec : $PIP_BIN"
 echo "   Cela peut prendre quelques minutes..."
 
-pip3 install --quiet flask 2>/dev/null && echo "   ✅ Flask" || echo "   ❌ Flask"
-pip3 install --quiet telethon 2>/dev/null && echo "   ✅ Telethon" || echo "   ❌ Telethon"
-pip3 install --quiet opencc 2>/dev/null && echo "   ✅ OpenCC" || echo "   ❌ OpenCC"
-
-# Vérifier les dépendances
-echo ""
-echo "🔍 Vérification des dépendances..."
-python3 << 'EOF'
-import sys
-
-packages = {
-    'flask': 'Flask',
-    'telethon': 'Telethon',
-    'opencc': 'OpenCC'
-}
-
-for package, name in packages.items():
-    try:
-        __import__(package)
-        print(f"   ✅ {name}")
-    except ImportError:
-        print(f"   ❌ {name}")
-        sys.exit(1)
-EOF
-
-if [ $? -ne 0 ]; then
+if ! "$PIP_BIN" install -r requirements.txt; then
     echo ""
-    echo "❌ Certaines dépendances ne sont pas installées"
-    echo "   Installez manuellement avec:"
-    echo "   pip install flask telethon opencc"
+    echo "❌ Échec de l'installation des dépendances"
+    echo "   Installez manuellement avec: $PIP_BIN install -r requirements.txt"
     exit 1
 fi
 
-# Vérifier l'intégrité du système
+echo "   ✅ Dépendances installées"
+
+# Installer le navigateur Playwright (nécessaire pour la feature screenshot)
 echo ""
-echo "🔎 Vérification de l'intégrité du système..."
-python3 verify_system.py
+echo "🌐 Installation du navigateur Playwright (Chromium)..."
+if ! "$PYTHON_BIN" -m playwright install chromium; then
+    echo "   ⚠️  Échec de l'installation de Chromium — la feature screenshot ne fonctionnera pas"
+fi
 
 # Résumé final
 echo ""
@@ -76,13 +64,13 @@ echo "========================================================================"
 echo "  ✅ INSTALLATION TERMINÉE"
 echo "========================================================================"
 echo ""
-echo "🚀 Pour démarrer, exécutez:"
+echo "🚀 Pour démarrer le bot, exécutez :"
 echo ""
-echo "   python3 launcher.py"
+echo "   $PYTHON_BIN main.py"
 echo ""
-echo "Ou visitez:"
-echo "   - Annotation: http://localhost:5000"
-echo "   - Test: http://localhost:5001/test"
+echo "   (redémarrez pm2 si le bot tourne déjà en prod : pm2 restart bo-bot)"
 echo ""
-echo "Pour plus d'informations, consultez QUICKSTART.md"
+echo "📱 L'app Android compagnon (alarme + configuration) se trouve dans"
+echo "   android_alarm_app/ — à ouvrir dans Android Studio"
+echo "   (voir android_alarm_app/README.md pour le premier lancement)."
 echo ""
