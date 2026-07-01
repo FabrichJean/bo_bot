@@ -31,6 +31,8 @@ class AlarmServer:
     AUTH_TIMEOUT_SECONDS = 10
     PARTICIPANTS_LIMIT = 200
 
+    PHOTO_CONCURRENCY = 8
+
     def __init__(self, host: str, port: int, token: str, client, watch_store):
         self.host = host
         self.port = port
@@ -39,6 +41,8 @@ class AlarmServer:
         self.watch_store = watch_store
         self._server = None
         self._clients = set()
+        self._photo_cache = {}
+        self._photo_semaphore = asyncio.Semaphore(self.PHOTO_CONCURRENCY)
 
     async def start(self):
         self._server = await websockets.serve(self._handle_client, self.host, self.port)
@@ -114,25 +118,33 @@ class AlarmServer:
         else:
             print(f"[AlarmServer] Type de message inconnu : {msg_type!r}")
 
-    async def _photo_base64(self, entity) -> str | None:
-        try:
-            photo_bytes = await self.client.download_profile_photo(entity, file=bytes, download_big=False)
-            if not photo_bytes:
-                return None
-            return base64.b64encode(photo_bytes).decode('ascii')
-        except Exception as e:
-            print(f"[AlarmServer] Erreur récupération photo de profil : {e}")
-            return None
+    async def _photo_base64(self, entity_id, entity) -> str | None:
+        """Récupère (et met en cache par entity_id) la photo de profil en base64.
+        Les téléchargements sont limités en concurrence (PHOTO_CONCURRENCY) et
+        lancés en parallèle par l'appelant plutôt que l'un après l'autre, sinon
+        c'est très lent dès qu'il y a plus de quelques chats/membres.
+        """
+        if entity_id in self._photo_cache:
+            return self._photo_cache[entity_id]
+
+        async with self._photo_semaphore:
+            try:
+                photo_bytes = await self.client.download_profile_photo(entity, file=bytes, download_big=False)
+                result = base64.b64encode(photo_bytes).decode('ascii') if photo_bytes else None
+            except Exception as e:
+                print(f"[AlarmServer] Erreur récupération photo de profil : {e}")
+                result = None
+
+        self._photo_cache[entity_id] = result
+        return result
 
     async def _send_chats(self, websocket):
         chats = []
         try:
-            async for dialog in self.client.iter_dialogs():
-                chats.append({
-                    'id': dialog.id,
-                    'name': dialog.name or str(dialog.id),
-                    'photo': await self._photo_base64(dialog.entity),
-                })
+            dialogs = [d async for d in self.client.iter_dialogs()]
+            photos = await asyncio.gather(*(self._photo_base64(d.id, d.entity) for d in dialogs))
+            for dialog, photo in zip(dialogs, photos):
+                chats.append({'id': dialog.id, 'name': dialog.name or str(dialog.id), 'photo': photo})
         except Exception as e:
             print(f"[AlarmServer] Erreur récupération des chats : {e}")
         await websocket.send(json.dumps({'type': 'chats', 'data': chats}))
@@ -141,14 +153,11 @@ class AlarmServer:
         users = {}
         for chat_id in self.watch_store.chats:
             try:
-                async for user in self.client.iter_participants(chat_id, limit=self.PARTICIPANTS_LIMIT):
+                participants = [u async for u in self.client.iter_participants(chat_id, limit=self.PARTICIPANTS_LIMIT)]
+                photos = await asyncio.gather(*(self._photo_base64(u.id, u) for u in participants))
+                for user, photo in zip(participants, photos):
                     name = user.username or user.first_name or f"User {user.id}"
-                    users[user.id] = {
-                        'id': user.id,
-                        'username': user.username,
-                        'name': name,
-                        'photo': await self._photo_base64(user),
-                    }
+                    users[user.id] = {'id': user.id, 'username': user.username, 'name': name, 'photo': photo}
             except Exception as e:
                 print(f"[AlarmServer] Erreur récupération des membres de {chat_id} : {e}")
         await websocket.send(json.dumps({'type': 'users', 'data': list(users.values())}))
