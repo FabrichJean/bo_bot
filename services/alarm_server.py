@@ -128,7 +128,7 @@ class AlarmServer:
             try:
                 async for user in self.client.iter_participants(chat_id, limit=self.PARTICIPANTS_LIMIT):
                     name = user.username or user.first_name or f"User {user.id}"
-                    users[user.id] = {'id': user.id, 'name': name}
+                    users[user.id] = {'id': user.id, 'username': user.username, 'name': name}
             except Exception as e:
                 print(f"[AlarmServer] Erreur récupération des membres de {chat_id} : {e}")
         await websocket.send(json.dumps({'type': 'users', 'data': list(users.values())}))
