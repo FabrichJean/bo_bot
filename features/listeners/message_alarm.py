@@ -1,19 +1,19 @@
-"""Listener: log tous les messages du groupe, quel que soit l'expéditeur.
+"""Listener: log tous les messages des chats surveillés (ctx.watch_store,
+configurable à chaud depuis l'app Android), quel que soit l'expéditeur, et
+déclenche l'alarme sur le téléphone Android connecté via ctx.alarm_server.
 
-Les utilisateurs listés dans EXCLUDED_USERS (variable d'env, voir config.py)
-sont ignorés.
+Les utilisateurs listés dans ctx.watch_store.excluded_users sont ignorés.
 """
 
 from telethon import events
 
-from config import GROUP_ID_TEST, EXCLUDED_USERS
-
 
 def register(ctx):
-    excluded = {u.lower() for u in EXCLUDED_USERS}
+    @ctx.client.on(events.NewMessage())
+    async def message_alarm_listener(event):
+        if not ctx.watch_store.is_watched(event.chat_id):
+            return
 
-    @ctx.client.on(events.NewMessage(chats=GROUP_ID_TEST))
-    async def message_logger_listener(event):
         if not event.message.text:
             return
 
@@ -21,12 +21,9 @@ def register(ctx):
         sender_id = getattr(sender, 'id', None)
         username = getattr(sender, 'username', None)
 
-        identifiers = {str(sender_id)}
-        if username:
-            identifiers.add(username.lower())
-
-        if identifiers & excluded:
+        if ctx.watch_store.is_excluded(sender_id, username):
             return
 
         expediteur = username or getattr(sender, 'first_name', None) or f"User {sender_id}"
-        print(f"[message_logger] {expediteur}: {event.message.text}")
+        print(f"[message_alarm] {expediteur}: {event.message.text}")
+        await ctx.alarm_server.broadcast_alarm(expediteur, event.message.text)

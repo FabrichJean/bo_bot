@@ -43,9 +43,19 @@ RAPPORT_TEST_SAVE_DESTINATION = '4434387102'  # ID, username ou 'me' pour les Sa
 if isinstance(RAPPORT_TEST_SAVE_DESTINATION, str) and RAPPORT_TEST_SAVE_DESTINATION.lstrip('-').isdigit():
     RAPPORT_TEST_SAVE_DESTINATION = int(RAPPORT_TEST_SAVE_DESTINATION)
 
-# --- MESSAGE LOGGER LISTENER ---
-# Usernames ou IDs (sans @) à ignorer, ex: ['jkbot', '92983875']
-EXCLUDED_USERS = []
+# --- MESSAGE ALARM LISTENER ---
+# Valeurs de seed utilisées uniquement au tout premier démarrage (avant que
+# alarm_watch_config.json n'existe). Une fois ce fichier créé, c'est lui qui
+# fait foi — configurable en direct depuis l'app Android (services/alarm_server.py
+# + services/alarm_watch_store.py). Ne pas modifier ces valeurs pour changer
+# la config d'une instance déjà lancée : éditer alarm_watch_config.json plutôt.
+MESSAGE_ALARM_CHATS = [GROUP_ID_TEST]
+EXCLUDED_USERS = ['']
+
+# --- ALARM SERVER (WebSocket vers l'app Android) ---
+ALARM_WS_HOST = '0.0.0.0'
+ALARM_WS_PORT = 8765
+ALARM_WS_TOKEN = 'change-me-token'  # partagé avec l'app Android
 
 # --- COMMANDES ---
 COMMAND_PREFIX = '/'
