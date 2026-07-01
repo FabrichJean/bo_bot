@@ -9,7 +9,9 @@
       "Bash(/Users/md/Documents/bobot/.venv/bin/python /private/tmp/claude-501/-Users-md-Documents-bobot/0b694d4c-37fd-40d6-90cf-6b92b2279305/scratchpad/test_alarm_server.py)",
       "Bash(python3 -c ' *)",
       "Bash(lsof -iTCP:8765 -sTCP:LISTEN -n -P)",
-      "Bash(/Users/md/Documents/bobot/.venv/bin/python -m py_compile /Users/md/Documents/bobot/*.py /Users/md/Documents/bobot/services/*.py /Users/md/Documents/bobot/features/*/*.py)"
+      "Bash(/Users/md/Documents/bobot/.venv/bin/python -m py_compile /Users/md/Documents/bobot/*.py /Users/md/Documents/bobot/services/*.py /Users/md/Documents/bobot/features/*/*.py)",
+      "Bash(/Users/md/Documents/bobot/.venv/bin/python -m py_compile /Users/md/Documents/bobot/services/alarm_server.py)",
+      "Bash(/Users/md/Documents/bobot/.venv/bin/python /private/tmp/claude-501/-Users-md-Documents-bobot/0b694d4c-37fd-40d6-90cf-6b92b2279305/scratchpad/test_alarm_photo.py)"
     ]
   }
 }
