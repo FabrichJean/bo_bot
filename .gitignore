@@ -4,3 +4,4 @@ ecosystem.config.js
 venv/
 android_alarm_app/
 session_bobot.session
+alarm_watch_config.json
