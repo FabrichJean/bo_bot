@@ -8,9 +8,11 @@ Protocole JSON minimal :
 - Serveur -> client (à chaque déclenchement) : {"type": "alarm", "sender": ..., "text": ..., "ts": ...}
 
 Une fois authentifié, le client peut aussi envoyer :
-- {"type": "list_chats"} -> {"type": "chats", "data": [{"id":.., "name":.., "photo": <base64|null>}, ...]}
-- {"type": "list_excludable_users"} -> {"type": "users", "data": [{"id":.., "name":.., "photo": <base64|null>}, ...]}
-  (membres des chats déjà enregistrés dans watch_store, dédupliqués)
+- {"type": "list_chats"} -> un {"type": "chat_item", "data": {"id":.., "name":.., "photo": <base64|null>}}
+  par chat, envoyé dès que sa photo est prête (pas dans l'ordre), puis
+  {"type": "chats_done"} une fois tous les chats envoyés.
+- {"type": "list_excludable_users"} -> pareil avec {"type": "user_item", "data": {...}} puis
+  {"type": "users_done"} (membres des chats déjà enregistrés dans watch_store, dédupliqués)
 - {"type": "get_config"} -> {"type": "config", "chats": [...], "excluded_users": [...]}
 - {"type": "set_config", "chats": [...], "excluded_users": [...]} -> {"type": "config_ok"}
 """
@@ -138,29 +140,47 @@ class AlarmServer:
         self._photo_cache[entity_id] = result
         return result
 
+    async def _build_chat_item(self, dialog):
+        photo = await self._photo_base64(dialog.id, dialog.entity)
+        return {'id': dialog.id, 'name': dialog.name or str(dialog.id), 'photo': photo}
+
     async def _send_chats(self, websocket):
-        chats = []
         try:
             dialogs = [d async for d in self.client.iter_dialogs()]
-            photos = await asyncio.gather(*(self._photo_base64(d.id, d.entity) for d in dialogs))
-            for dialog, photo in zip(dialogs, photos):
-                chats.append({'id': dialog.id, 'name': dialog.name or str(dialog.id), 'photo': photo})
         except Exception as e:
             print(f"[AlarmServer] Erreur récupération des chats : {e}")
-        await websocket.send(json.dumps({'type': 'chats', 'data': chats}))
+            dialogs = []
+
+        tasks = [asyncio.ensure_future(self._build_chat_item(d)) for d in dialogs]
+        for task in asyncio.as_completed(tasks):
+            chat = await task
+            await websocket.send(json.dumps({'type': 'chat_item', 'data': chat}))
+
+        await websocket.send(json.dumps({'type': 'chats_done'}))
+
+    async def _build_user_item(self, user):
+        name = user.username or user.first_name or f"User {user.id}"
+        photo = await self._photo_base64(user.id, user)
+        return {'id': user.id, 'username': user.username, 'name': name, 'photo': photo}
 
     async def _send_excludable_users(self, websocket):
-        users = {}
+        seen_ids = set()
+        participants = []
         for chat_id in self.watch_store.chats:
             try:
-                participants = [u async for u in self.client.iter_participants(chat_id, limit=self.PARTICIPANTS_LIMIT)]
-                photos = await asyncio.gather(*(self._photo_base64(u.id, u) for u in participants))
-                for user, photo in zip(participants, photos):
-                    name = user.username or user.first_name or f"User {user.id}"
-                    users[user.id] = {'id': user.id, 'username': user.username, 'name': name, 'photo': photo}
+                async for user in self.client.iter_participants(chat_id, limit=self.PARTICIPANTS_LIMIT):
+                    if user.id not in seen_ids:
+                        seen_ids.add(user.id)
+                        participants.append(user)
             except Exception as e:
                 print(f"[AlarmServer] Erreur récupération des membres de {chat_id} : {e}")
-        await websocket.send(json.dumps({'type': 'users', 'data': list(users.values())}))
+
+        tasks = [asyncio.ensure_future(self._build_user_item(u)) for u in participants]
+        for task in asyncio.as_completed(tasks):
+            user_item = await task
+            await websocket.send(json.dumps({'type': 'user_item', 'data': user_item}))
+
+        await websocket.send(json.dumps({'type': 'users_done'}))
 
     async def _send_config(self, websocket):
         await websocket.send(json.dumps({
